@@ -1,4 +1,4 @@
 # csv_view
-python_program
+A python_program uses Antigravity IDE and Antigravity CLI
 #app.py
-app.py use streamlit
+A app.py uses streamlit
