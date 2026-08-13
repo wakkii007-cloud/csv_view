@@ -1,0 +1,194 @@
+digraph AppFlowchart {
+    graph [
+        label="📊 CSVデータビジュアルアナライザー & 高度解析ダッシュボード (app.py) 処理フローチャート"
+        labelloc="t"
+        labeljust="c"
+        fontsize=18
+        fontname="Noto Sans CJK JP"
+        bgcolor="#FFFFFF"
+        rankdir=TB
+        nodesep=0.4
+        ranksep=0.5
+        splines=ortho
+    ];
+
+    node [
+        fontname="Noto Sans CJK JP"
+        fontsize=10
+        shape=rect
+        style="filled,rounded"
+        fillcolor="#F8F9FA"
+        color="#D3D3D3"
+        penwidth=1.2
+        margin="0.2,0.1"
+    ];
+
+    edge [
+        fontname="Noto Sans CJK JP"
+        fontsize=9
+        color="#595959"
+        penwidth=1.2
+        arrowsize=0.8
+    ];
+
+    // --- Start & Init ---
+    start [label="🚀 アプリケーション起動\n(Streamlit Server)", shape=ellipse, fillcolor="#1F4E79", fontcolor="#FFFFFF", penwidth=0];
+    
+    subgraph cluster_init {
+        label = "1. 初期化・ページ設定";
+        style = "dashed";
+        color = "#2E75B6";
+        fontcolor = "#2E75B6";
+        fontname = "Noto Sans CJK JP";
+        fontsize = 11;
+        
+        page_config [label="st.set_page_config()\n・タイトル/アイコン設定\n・レイアウト: wide\n・サイドバー: expanded", fillcolor="#EBF3FA"];
+        css_inject [label="st.markdown(<style>...)\n・カスタムCSS注入\n(.stMetric, .insight-card, .info-card)", fillcolor="#EBF3FA"];
+    }
+
+    // --- Data Source ---
+    subgraph cluster_input {
+        label = "2. データソース選択 & 読み込み (load_csv_data)";
+        style = "dashed";
+        color = "#4B6B94";
+        fontcolor = "#4B6B94";
+        fontname = "Noto Sans CJK JP";
+        fontsize = 11;
+
+        mode_select [label="1. 作業モードの選択\n(図のみ / 分析のみ / 両方)", shape=box, fillcolor="#F0F4F8"];
+        source_select [label="2. データソースの選択\n(サンプルCSV / ユーザーアップロード)", shape=box, fillcolor="#F0F4F8"];
+        cond_source [label="データソース種類?", shape=diamond, fillcolor="#FFF2CC", color="#D6B656"];
+        
+        load_sample [label="サンプルデータ読み込み\n(filepath='sample_data.csv')", fillcolor="#E2EFDA"];
+        load_upload [label="st.file_uploader()\nユーザー指定CSVファイル取得", fillcolor="#E2EFDA"];
+        
+        load_func [label="【関数】 load_csv_data()\n順次エンコーディング試行\n(UTF-8 -> Shift-JIS -> CP932 -> EUC-JP)\nPandas DataFrame生成", fillcolor="#D9E1F2", shape=component];
+    }
+
+    cond_df [label="DataFrame正常取得?\n(df is not None and not df.empty)", shape=diamond, fillcolor="#FCE4D6", color="#C55A11"];
+    stop_app [label="🛑 案内メッセージ表示 & st.stop()\n(処理一時停止)", shape=ellipse, fillcolor="#F8CECC", fontcolor="#B85450"];
+
+    // --- Data Profiling ---
+    subgraph cluster_profiling {
+        label = "3. データプロファイリング (自動列分類)";
+        style = "dashed";
+        color = "#70AD47";
+        fontcolor = "#70AD47";
+        fontname = "Noto Sans CJK JP";
+        fontsize = 11;
+
+        col_classify [label="列データ型の識別\n・全項目列 (all_columns)\n・数値列 (numeric_columns)\n・カテゴリ列 (categorical_columns)\n・日付列 (date_columns: 60%以上日付変換可)", fillcolor="#E2EFDA"];
+    }
+
+    // --- Sidebar Params ---
+    subgraph cluster_sidebar_params {
+        label = "4. グラフ・分析パラメータ設定 (サイドバー)";
+        style = "dashed";
+        color = "#ED7D31";
+        fontcolor = "#ED7D31";
+        fontname = "Noto Sans CJK JP";
+        fontsize = 11;
+
+        param_select [label="軸・グループの選択\n・X軸列 (x_column)\n・Y軸数値列 (y_columns: 複数選択可)\n・グループ分け/色分け列 (group_column)", fillcolor="#FCE4D6"];
+        chart_type_select [label="表示グラフ種別の選択\n(折れ線/棒/散布/ヒストグラム/箱ひげ/円)", fillcolor="#FCE4D6"];
+    }
+
+    // --- Main Header ---
+    main_header [label="メイン画面表示\n・ヘッダー & サマリーメトリクス (行数/列数/数値列/日付列)\n・データプレビュータブ (データ一覧/基本統計/欠損値)", fillcolor="#EDEDED"];
+
+    // --- Tab Branching ---
+    tab_branch [label="作業モード分岐\n(app_mode)", shape=diamond, fillcolor="#FFF2CC", color="#D6B656"];
+
+    // --- Modules ---
+    subgraph cluster_mod1 {
+        label = "モジュール 1: 📊 インタラクティブ可視化";
+        style = "filled";
+        fillcolor="#F2F4F8";
+        color="#4F46E5";
+        fontcolor="#4F46E5";
+        fontname="Noto Sans CJK JP";
+        fontsize=11;
+
+        mod1_proc [label="Plotly可視化描画\n・選択グラフを2列レイアウトで生成\n・plotly_white テーマ適用\n・折れ線/棒/散布/ヒスト/箱ひげ/円", fillcolor="#E0E7FF"];
+    }
+
+    subgraph cluster_mod2 {
+        label = "モジュール 2: 🧪 統計学的分析";
+        style = "filled";
+        fillcolor="#F0FDF4";
+        color="#16A34A";
+        fontcolor="#16A34A";
+        fontname="Noto Sans CJK JP";
+        fontsize=11;
+
+        mod2_sub1 [label="2-1. 詳細記述統計量\n平均/中央値/標準偏差/IQR/歪度/尖度/95%信頼区間", fillcolor="#DCFCE7"];
+        mod2_sub2 [label="2-2. 相関分析\nピアソン/スピアマン相関行列・ヒートマップ・p値有意性", fillcolor="#DCFCE7"];
+        mod2_sub3 [label="2-3. 仮説検定・グループ比較\n2群: Welchのt検定 / Mann-Whitney U\n多群: ANOVA / Kruskal-Wallis + 箱ひげ図", fillcolor="#DCFCE7"];
+    }
+
+    subgraph cluster_mod3 {
+        label = "モジュール 3: 📐 線形分析 (回帰分析)";
+        style = "filled";
+        fillcolor="#EFF6FF";
+        color="#2563EB";
+        fontcolor="#2563EB";
+        fontname="Noto Sans CJK JP";
+        fontsize=11;
+
+        mod3_proc [label="OLS最小二乗法モデル (statsmodels)\n・目的変数 Y vs 説明変数 X\n・R² / 調整済みR² / RMSE\n・回帰係数・p値テーブル & 回帰方程式\n・単回帰直線 / 予測値 vs 実測値 & 残差プロット", fillcolor="#DBEAFE"];
+    }
+
+    subgraph cluster_mod4 {
+        label = "モジュール 4: ⏳ 時系列分析";
+        style = "filled";
+        fillcolor="#FEF3C7";
+        color="#D97706";
+        fontcolor="#D97706";
+        fontname="Noto Sans CJK JP";
+        fontsize=11;
+
+        mod4_proc [label="時系列解析・トレンド推計\n・datetime変換 & 昇順ソート\n・移動平均 (SMA) & ボリンジャーバンド (±2σ)\n・前期比成長率 (%) & 累積和\n・線形トレンドモデルによる将来予測 (LinearRegression)", fillcolor="#FDE68A"];
+    }
+
+    footer [label="💡 フッター解説 & 利用ガイド表示", fillcolor="#EDEDED"];
+    end_node [label="🏁 処理完了 (ユーザー操作待機)", shape=ellipse, fillcolor="#1F4E79", fontcolor="#FFFFFF", penwidth=0];
+
+    // --- Connections ---
+    start -> page_config;
+    page_config -> css_inject;
+    css_inject -> mode_select;
+    mode_select -> source_select;
+    source_select -> cond_source;
+
+    cond_source -> load_sample [label="サンプルデータ"];
+    cond_source -> load_upload [label="自分のCSV"];
+
+    load_sample -> load_func;
+    load_upload -> load_func;
+
+    load_func -> cond_df;
+    cond_df -> stop_app [label="No (空/無効)"];
+    cond_df -> col_classify [label="Yes (正常)"];
+
+    col_classify -> param_select;
+    param_select -> chart_type_select;
+    chart_type_select -> main_header;
+
+    main_header -> tab_branch;
+
+    tab_branch -> mod1_proc [label="図を表示"];
+    tab_branch -> mod2_sub1 [label="データを分析"];
+    tab_branch -> mod3_proc [label="データを分析"];
+    tab_branch -> mod4_proc [label="データを分析"];
+    tab_branch -> mod1_proc [label="両方を表示"];
+    tab_branch -> mod2_sub1 [label="両方を表示"];
+    
+    mod2_sub1 -> mod2_sub2 -> mod2_sub3;
+
+    mod1_proc -> footer;
+    mod2_sub3 -> footer;
+    mod3_proc -> footer;
+    mod4_proc -> footer;
+
+    footer -> end_node;
+}
