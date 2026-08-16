@@ -2,5 +2,8 @@
 A python_program uses Antigravity IDE and Antigravity CLI.
 #app.py
 A app.py uses streamlit.
+#venv
+pip install -r requirements.txt
 #run
 streamlit run app.py
+
